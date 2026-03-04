@@ -3,10 +3,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
 
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package motorphpayroll;
 
 /*
@@ -15,7 +11,6 @@ package motorphpayroll;
  * Week 6: Variables & Data Types | Week 7: Operators | Week 8: Control Structures 
  * Week 9: Java Methods | Week 10: File Handling
  */
-
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -62,7 +57,7 @@ public class MotorPHPayroll {
                 String id = scanner.nextLine();
                 String data = findLineById("data_employee.csv", id);
                 if (data != null) {
-                    String[] emp = regexSplit(data);
+                    String[] emp = smartSplit(data);
                     System.out.println("\n[ Employee Details ]");
                     System.out.println("a. Employee Number: " + emp[0]);
                     System.out.println("b. Employee Name: " + emp[2] + " " + emp[1]);
@@ -105,7 +100,7 @@ public class MotorPHPayroll {
                 if (data != null) {
                     System.out.print("Enter month (06 to 12): ");
                     String month = scanner.nextLine();
-                    calculatePayroll(regexSplit(data), month);
+                    calculatePayroll(smartSplit(data), month);
                 } else {
                     System.out.println("Employee number does not exist.");
                 }
@@ -124,7 +119,7 @@ public class MotorPHPayroll {
             br.readLine(); 
             String line;
             while ((line = br.readLine()) != null) {
-                calculatePayroll(regexSplit(line), month);
+                calculatePayroll(smartSplit(line), month);
             }
         } catch (IOException e) {}
     }
@@ -221,7 +216,7 @@ public class MotorPHPayroll {
             br.readLine(); 
             String line;
             while ((line = br.readLine()) != null) {
-                String[] row = regexSplit(line); 
+                String[] row = smartSplit(line); 
                 if (row[0].trim().equals(id.trim())) {
                     String[] date = row[3].split("/");
                     if (date[0].equals(month)) {
@@ -257,7 +252,7 @@ public class MotorPHPayroll {
         if (gross < 11250) return 495.00;
         if (gross < 11750) return 517.50;
         if (gross < 12250) return 540.00;
-        if (gross < 12750) return 562.50;
+        if (gross < 12250) return 562.50;
         if (gross < 13250) return 585.00;
         if (gross < 13750) return 607.50;
         if (gross < 14250) return 630.00;
@@ -357,19 +352,30 @@ public class MotorPHPayroll {
     }
 
     /**
-     * Regex.
-     * Splits by commas but ignores commas inside double quotes.
+     * CSV Parser.
+     * Iterates character by character to handle commas inside quotes.
      */
-    private static String[] regexSplit(String line) {
-        // This regex splits on commas that are followed by an even number of quotes
-        // Effectively ignoring commas inside quoted strings.
-        String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-        
-        // Clean up quotes from the resulting strings
-        for (int i = 0; i < parts.length; i++) {
-            parts[i] = parts[i].replace("\"", "").trim();
+    private static String[] smartSplit(String line) {
+        String[] results = new String[30]; // Large enough for all columns
+        StringBuilder currentColumn = new StringBuilder();
+        int colIndex = 0;
+        boolean inQuotes = false;
+
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+
+            if (c == '\"') {
+                inQuotes = !inQuotes; // Toggle status
+            } else if (c == ',' && !inQuotes) {
+                results[colIndex++] = currentColumn.toString().trim();
+                currentColumn.setLength(0); // Clear for next column
+            } else {
+                currentColumn.append(c);
+            }
         }
-        return parts;
+        // Add the last column
+        results[colIndex] = currentColumn.toString().trim();
+        return results;
     }
 
     private static String findLineById(String path, String id) {
