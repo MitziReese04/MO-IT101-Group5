@@ -2,6 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
+ */
 package motorphpayroll;
 
 /*
@@ -280,21 +285,75 @@ public class MotorPHPayroll {
         return 1125.00;
     }
 
-    public static double computePhilHealth(double gross) {
-        return (gross <= 10000) ? 150.0 : (gross >= 60000) ? 900.0 : (gross * 0.03) / 2;
+    public static double computePhilHealth(double salary) {
+        double totalPremium;
+        double rate = 0.03;
+
+        if (salary <= 10000) {
+            // Floor: Minimum contribution is 300
+            totalPremium = 300.0;
+        } else if (salary >= 60000) {
+            // Ceiling: Maximum contribution is 1800
+            totalPremium = 1800.0;
+        } else {
+            // Calculated for salaries between 10,000.01 and 59,999.99
+            totalPremium = salary * rate;
+        }
+
+        // Return only the employee's share (50% of the total)
+        return totalPremium / 2;
     }
 
-    public static double computePagIBIG(double gross) {
-        return Math.min(100.0, (gross > 1500) ? gross * 0.02 : gross * 0.01);
+    public static double computePagIBIG(double salary) {
+        double employeeRate;
+        double employerRate = 0.02; // Employer is always 2% based on your rules
+        double totalContribution;
+
+        // Determine rate based on salary
+        if (salary >= 1000 && salary <= 1500) {
+            employeeRate = 0.01;
+        } else if (salary > 1500) {
+            employeeRate = 0.02;
+        } else {
+            // If salary is below 1000, usually there is no contribution
+            return 0;
+        }
+
+        // Calculate total
+        totalContribution = (salary * employeeRate) + (salary * employerRate);
+
+        // Apply the maximum cap of 100
+        if (totalContribution > 100) {
+            return 100.0;
+        }
+
+        return totalContribution;
     }
 
     public static double calculateWithholdingTax(double taxableIncome) {
-        if (taxableIncome <= 20832) return 0;
-        else if (taxableIncome < 33333) return (taxableIncome - 20833) * 0.20;
-        else if (taxableIncome < 66667) return 2500 + (taxableIncome - 33333) * 0.25;
-        else if (taxableIncome < 166667) return 10833 + (taxableIncome - 66667) * 0.30;
-        else if (taxableIncome < 666667) return 40833.33 + (taxableIncome - 166667) * 0.32;
-        else return 200833.33 + (taxableIncome - 666667) * 0.35;
+        double tax = 0;
+
+        if (taxableIncome <= 20832) {
+            // Case 1: 20,832 and below
+            tax = 0;
+        } else if (taxableIncome < 33333) {
+            // Case 2: 20,833 to below 33,333
+            tax = (taxableIncome - 20833) * 0.20;
+        } else if (taxableIncome < 66667) {
+            // Case 3: 33,333 to below 66,667
+            tax = 2500 + (taxableIncome - 33333) * 0.25;
+        } else if (taxableIncome < 166667) {
+            // Case 4: 66,667 to below 166,667
+            tax = 10833 + (taxableIncome - 66667) * 0.30;
+        } else if (taxableIncome < 666667) {
+            // Case 5: 166,667 to below 666,667
+            tax = 40833.33 + (taxableIncome - 166667) * 0.32;
+        } else {
+            // Case 6: 666,667 and above
+            tax = 200833.33 + (taxableIncome - 666667) * 0.35;
+        }
+
+        return tax;
     }
 
     /**
