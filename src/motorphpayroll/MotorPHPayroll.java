@@ -19,6 +19,9 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 public class MotorPHPayroll {
+    
+    private static final String ATTENDANCE_FILE = "resources/data_attendance.csv";
+    private static final String EMPLOYEE_FILE = "resources/data_employee.csv";
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -54,7 +57,7 @@ public class MotorPHPayroll {
             if (choice.equals("1")) {
                 System.out.print("Enter Employee Number: ");
                 String id = scanner.nextLine();
-                String data = findEmployeeData("data_employee.csv", id);
+                String data = findEmployeeData(EMPLOYEE_FILE, id);
                 if (data != null) {
                     String[] emp = smartSplit(data);
                     System.out.println("\n[ Employee Details ]");
@@ -95,7 +98,7 @@ public class MotorPHPayroll {
             if (choice.equals("1")) {
                 System.out.print("Enter employee number: ");
                 String id = scanner.nextLine();
-                String data = findEmployeeData("data_employee.csv", id);
+                String data = findEmployeeData(EMPLOYEE_FILE, id);
                 if (data != null) {
                     System.out.print("Enter month (06 to 12): ");
                     String month = scanner.nextLine();
@@ -114,13 +117,15 @@ public class MotorPHPayroll {
     }
 
     private static void processAll(String month) {
-        try (BufferedReader br = new BufferedReader(new FileReader("data_employee.csv"))) {
-            br.readLine(); 
-            String line;
-            while ((line = br.readLine()) != null) {
-                calculatePayroll(smartSplit(line), month);
-            }
-        } catch (IOException e) {}
+    try (BufferedReader br = new BufferedReader(new FileReader(EMPLOYEE_FILE))) {
+        br.readLine(); 
+        String line;
+        while ((line = br.readLine()) != null) {
+            calculatePayroll(smartSplit(line), month);
+        }
+    } catch (IOException e) {
+        System.out.println("Error: Could not find employee file in resources folder.");
+        }
     }
 
     public static void calculatePayroll(String[] emp, String month) {
@@ -164,7 +169,7 @@ public class MotorPHPayroll {
         System.out.println("    SSS: " + sss);
         System.out.println("    PhilHealth: " + ph);
         System.out.println("    Pag-IBIG: " + pi);
-        System.out.println("    Tax: " + tax + " (" + (taxableIncome <= 20832 ? "Not taxable" : "Taxable") + ")");
+        System.out.println("    Tax: " + tax);
         System.out.println(" Total Deductions: " + totalDeduc);
         System.out.println(" Net Salary: " + (gross2 - totalDeduc));
         System.out.println("---------------------------------------------");
@@ -210,8 +215,8 @@ public class MotorPHPayroll {
     }
 
     public static double hoursWorked(String id, String month, int start, int end) {
-        double total = 0;
-        try (BufferedReader br = new BufferedReader(new FileReader("data_attendance.csv"))) {
+    double total = 0;
+    try (BufferedReader br = new BufferedReader(new FileReader(ATTENDANCE_FILE))) {
             br.readLine(); 
             String line;
             while ((line = br.readLine()) != null) {
@@ -351,7 +356,7 @@ public class MotorPHPayroll {
     }
 
     /**
-     * CSV Parser.
+     * CSV Parser. Baeldung CSV File into Array 6.1
      * Iterates character by character to handle commas inside quotes.
      */
     private static String[] smartSplit(String line) {
@@ -377,12 +382,18 @@ public class MotorPHPayroll {
     }
 
     private static String findEmployeeData(String path, String id) {
-        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                if (line.trim().startsWith(id.trim() + ",")) return line;
+    try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] columns = smartSplit(line);
+            // Check if the first column (index 0) matches the ID
+            if (columns[0] != null && columns[0].trim().equals(id.trim())) {
+                return line;
             }
-        } catch (IOException e) {}
-        return null;
+        }
+    } catch (IOException e) {
+        System.out.println("Error reading file: " + e.getMessage());
+    }
+    return null;
     }
 }
