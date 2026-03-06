@@ -7,7 +7,7 @@ import java.io.BufferedReader; // Week 10: To read files line by line efficientl
 import java.io.FileReader;     // Week 10: To open the connection to the .csv file.
 import java.io.IOException; // Week 10: Handles potential input/output failures, such as a missing file or a restricted directory.
 import java.util.Scanner;      // Week 8: To capture user input from the console.
-import java.time.LocalTime;    // Week 7/8: Represents a time (HH:mm:ss) used for time-based logic (grace periods)
+import java.time.LocalTime;    // Week 7/8: Represents a time (HH:mm) used for time-based logic (grace periods)
 import java.time.format.DateTimeFormatter; // Week 7: Standardizes how time is displayed or parsed, ensuring user input matches the required 24 hour pattern
 
 2. Files
@@ -80,8 +80,7 @@ Payroll cutoff (1-15) displays gross salary and net salary (no deductions)
 Payroll cutoff (16-31) displays gross salary and applies all monthly deductions to calculate the final Net Salary.
 
 
-Project Plan Link: https://docs.google.com/spreadsheets/d/1rbrQGOejCtMpRpwfM78M2QLEYzDD2OVu1BiteN0ZaC8/edit?usp=sharing 
-
-Tests: https://docs.google.com/spreadsheets/d/1lgwjecejDZlg4Ws7lmHo8aKcW4ddLghxu1lab4PAMwg/edit?usp=sharing 
+[Project Plan](https://docs.google.com/spreadsheets/d/1rbrQGOejCtMpRpwfM78M2QLEYzDD2OVu1BiteN0ZaC8/edit?usp=sharing) 
+[Excel Test for calculatePayroll](https://docs.google.com/spreadsheets/d/1lgwjecejDZlg4Ws7lmHo8aKcW4ddLghxu1lab4PAMwg/edit?usp=sharing)  
 
 
