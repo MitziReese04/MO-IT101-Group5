@@ -154,12 +154,10 @@ public class MotorPHPayroll {
             System.out.print("Enter month (06 to 12): ");
             String month = scanner.nextLine();
 
-            // --- THE CONDITIONAL FIX ---
             // If typed "6", "7", "8", or "9", make it "06", "07", etc.
             if (month.length() == 1) {
                 month = "0" + month;
             }
-            // ----------------------------
 
             if (choice.equals("1")) {
                 calculatePayroll(smartSplit(data), month);
