@@ -131,30 +131,45 @@ public class MotorPHPayroll {
     }
 
     public static void processPayrollMenu(Scanner scanner) {
-        while (true) {
-            System.out.println("\n--- PROCESS PAYROLL ---");
-            System.out.println("1. One employee\n2. All employees\n3. Back");
-            System.out.print("Choice: ");
-            String choice = scanner.nextLine();
+    while (true) {
+        System.out.println("\n--- PROCESS PAYROLL ---");
+        System.out.println("1. One employee\n2. All employees\n3. Back");
+        System.out.print("Choice: ");
+        String choice = scanner.nextLine();
+
+        if (choice.equals("1") || choice.equals("2")) {
+            String id = "";
+            String data = "";
 
             if (choice.equals("1")) {
                 System.out.print("Enter employee number: ");
-                String id = scanner.nextLine();
-                String data = findEmployeeData(EMPLOYEE_FILE, id);
-                if (data != null) {
-                    System.out.print("Enter month (06 to 12): ");
-                    String month = scanner.nextLine();
-                    calculatePayroll(smartSplit(data), month);
-                } else {
+                id = scanner.nextLine();
+                data = findEmployeeData(EMPLOYEE_FILE, id);
+                if (data == null) {
                     System.out.println("Employee number does not exist.");
+                    continue; 
                 }
-            } else if (choice.equals("2")) {
-                System.out.print("Enter month (06 to 12): ");
-                String month = scanner.nextLine();
-                processAll(month);
-            } else if (choice.equals("3")) {
-                break;
             }
+
+            System.out.print("Enter month (06 to 12): ");
+            String month = scanner.nextLine();
+
+            // --- THE CONDITIONAL FIX ---
+            // If typed "6", "7", "8", or "9", make it "06", "07", etc.
+            if (month.length() == 1) {
+                month = "0" + month;
+            }
+            // ----------------------------
+
+            if (choice.equals("1")) {
+                calculatePayroll(smartSplit(data), month);
+            } else {
+                processAll(month);
+            }
+
+        } else if (choice.equals("3")) {
+            break;
+          }
         }
     }
     
