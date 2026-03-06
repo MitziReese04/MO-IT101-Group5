@@ -73,6 +73,48 @@ public class MotorPHPayroll {
         }
     }
 
+    private static String findEmployeeData(String path, String id) {
+    try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] columns = smartSplit(line);
+            // Check if the first column (index 0) matches the ID
+            if (columns[0] != null && columns[0].trim().equals(id.trim())) {
+                return line;
+            }
+        }
+    } catch (IOException e) {
+        System.out.println("Error reading file: " + e.getMessage());
+    }
+    return null;
+    }
+    
+    /**
+     * CSV Parser. Baeldung CSV File into Array 6.1
+     * Iterates character by character to handle commas inside quotes.
+     */
+    private static String[] smartSplit(String line) {
+        String[] results = new String[30]; 
+        StringBuilder tempText = new StringBuilder();
+        int columnNumber = 0;
+        boolean inQuotes = false;
+
+        for (int i = 0; i < line.length(); i++) {
+            char currentCharacter = line.charAt(i);
+
+            if (currentCharacter == '\"') {
+                inQuotes = !inQuotes; 
+            } else if (currentCharacter == ',' && !inQuotes) {
+                results[columnNumber++] = tempText.toString().trim();
+                tempText.setLength(0); 
+            } else {
+                tempText.append(currentCharacter);
+            }
+        }
+        results[columnNumber] = tempText.toString().trim();
+        return results;
+    }
+
     public static void handlePayrollStaffFlow(Scanner scanner) {
         while (true) {
             System.out.println("\n--- PAYROLL STAFF OPTIONS ---");
@@ -115,80 +157,7 @@ public class MotorPHPayroll {
             }
         }
     }
-
-    private static void processAll(String month) {
-    try (BufferedReader br = new BufferedReader(new FileReader(EMPLOYEE_FILE))) {
-        br.readLine(); 
-        String line;
-        while ((line = br.readLine()) != null) {
-            calculatePayroll(smartSplit(line), month);
-        }
-    } catch (IOException e) {
-        System.out.println("Error: Could not find employee file in resources folder.");
-        }
-    }
-
-    public static void calculatePayroll(String[] emp, String month) {
-    String id = emp[0];
-    // Keep hourly rate and allowances as they are
-    double hourlyRate = Double.parseDouble(emp[18].replace(",", ""));
     
-    double rice = Double.parseDouble(emp[14].replace(",", "")) / 2.0;
-    double phone = Double.parseDouble(emp[15].replace(",", "")) / 2.0;
-    double clothing = Double.parseDouble(emp[16].replace(",", "")) / 2.0;
-    double totalAllowancesPerCutoff = rice + phone + clothing;
-
-    // 1. Calculate actual hours worked for both cutoffs
-    double h1 = hoursWorked(id, month, 1, 15);
-    double h2 = hoursWorked(id, month, 16, 31);
-
-    // 2. Calculate Gross Salary based on WORKED hours, not just basic salary
-    double gross1 = (h1 * hourlyRate) + totalAllowancesPerCutoff;
-    double gross2 = (h2 * hourlyRate) + totalAllowancesPerCutoff;
-
-    // 3. IMPORTANT: Calculate total monthly gross to determine correct tax/SSS brackets
-    double totalMonthlyGross = gross1 + gross2;
-
-    // 4. Use totalMonthlyGross instead of monthlyBasic
-    // This ensures that if they work less, they pay less tax/SSS
-    double sss = computeSSS(totalMonthlyGross);
-    double ph = computePhilHealth(totalMonthlyGross);
-    double pi = computePagIBIG(totalMonthlyGross);
-    
-    // 5. CORRECTED: Taxable Income is Gross minus the three contributions
-    double taxableIncome = totalMonthlyGross - (sss + ph + pi);
-    double tax = calculateWithholdingTax(taxableIncome);
-    
-    // 6. Total Deductions for the whole month
-    double totalDeduc = sss + ph + pi + tax;
-
-    // 4. Define the Net Salaries as variables
-    double netSalary1 = gross1; // No deductions for 1st cutoff
-    double netSalary2 = gross2 - totalDeduc; // All deductions applied here
-    
-    String mName = monthName(month);
-
-        System.out.println("\n---------------------------------------------");
-        System.out.println(" Employee #: " + id);
-        System.out.println(" Employee Name: " + emp[2] + " " + emp[1]);
-        System.out.println(" Birthday: " + emp[3]);
-        System.out.println(" Cutoff Date: " + mName + " 1 to " + mName + " 15");
-        System.out.println(" Total Hours Worked: " + h1);
-        System.out.println(" Gross Salary: " + gross1);
-        System.out.println(" Net Salary: " + netSalary1);
-        System.out.println(" \nCutoff Date: " + mName + " 16 to " + mName + " 31 (Deductions Applied)");
-        System.out.println(" Total Hours Worked: " + h2);
-        System.out.println(" Gross Salary: " + gross2);
-        System.out.println(" Each Deduction:");
-        System.out.println("    SSS: " + sss);
-        System.out.println("    PhilHealth: " + ph);
-        System.out.println("    Pag-IBIG: " + pi);
-        System.out.println("    Tax: " + tax);
-        System.out.println(" Total Deductions: " + totalDeduc);
-        System.out.println(" Net Salary: " + netSalary2);
-        System.out.println("---------------------------------------------");
-    }
-
     private static String monthName(String monthStr) {
         int month = Integer.parseInt(monthStr);
         return switch (month) {
@@ -203,6 +172,18 @@ public class MotorPHPayroll {
         };
     }
 
+    private static void processAll(String month) {
+    try (BufferedReader br = new BufferedReader(new FileReader(EMPLOYEE_FILE))) {
+        br.readLine(); 
+        String line;
+        while ((line = br.readLine()) != null) {
+            calculatePayroll(smartSplit(line), month);
+        }
+    } catch (IOException e) {
+        System.out.println("Error: Could not find employee file in resources folder.");
+        }
+    }
+    
     private static double calculateShift(String logIn, String logOut) {
         try {
             DateTimeFormatter format = DateTimeFormatter.ofPattern("H:mm");
@@ -369,45 +350,64 @@ public class MotorPHPayroll {
         return tax;
     }
 
-    /**
-     * CSV Parser. Baeldung CSV File into Array 6.1
-     * Iterates character by character to handle commas inside quotes.
-     */
-    private static String[] smartSplit(String line) {
-        String[] results = new String[30]; 
-        StringBuilder tempText = new StringBuilder();
-        int columnNumber = 0;
-        boolean inQuotes = false;
+    public static void calculatePayroll(String[] emp, String month) {
+    String id = emp[0];
+    // Keep hourly rate and allowances as they are
+    double hourlyRate = Double.parseDouble(emp[18].replace(",", ""));
+    
+    double rice = Double.parseDouble(emp[14].replace(",", "")) / 2.0;
+    double phone = Double.parseDouble(emp[15].replace(",", "")) / 2.0;
+    double clothing = Double.parseDouble(emp[16].replace(",", "")) / 2.0;
+    double totalAllowancesPerCutoff = rice + phone + clothing;
 
-        for (int i = 0; i < line.length(); i++) {
-            char currentCharacter = line.charAt(i);
+    // 1. Calculate actual hours worked for both cutoffs
+    double h1 = hoursWorked(id, month, 1, 15);
+    double h2 = hoursWorked(id, month, 16, 31);
 
-            if (currentCharacter == '\"') {
-                inQuotes = !inQuotes; 
-            } else if (currentCharacter == ',' && !inQuotes) {
-                results[columnNumber++] = tempText.toString().trim();
-                tempText.setLength(0); 
-            } else {
-                tempText.append(currentCharacter);
-            }
-        }
-        results[columnNumber] = tempText.toString().trim();
-        return results;
-    }
+    // 2. Calculate Gross Salary based on WORKED hours, not just basic salary
+    double gross1 = (h1 * hourlyRate) + totalAllowancesPerCutoff;
+    double gross2 = (h2 * hourlyRate) + totalAllowancesPerCutoff;
 
-    private static String findEmployeeData(String path, String id) {
-    try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-        String line;
-        while ((line = br.readLine()) != null) {
-            String[] columns = smartSplit(line);
-            // Check if the first column (index 0) matches the ID
-            if (columns[0] != null && columns[0].trim().equals(id.trim())) {
-                return line;
-            }
-        }
-    } catch (IOException e) {
-        System.out.println("Error reading file: " + e.getMessage());
+    // 3. IMPORTANT: Calculate total monthly gross to determine correct tax/SSS brackets
+    double totalMonthlyGross = gross1 + gross2;
+
+    // 4. Use totalMonthlyGross instead of monthlyBasic
+    // This ensures that if they work less, they pay less tax/SSS
+    double sss = computeSSS(totalMonthlyGross);
+    double ph = computePhilHealth(totalMonthlyGross);
+    double pi = computePagIBIG(totalMonthlyGross);
+    
+    // 5. CORRECTED: Taxable Income is Gross minus the three contributions
+    double taxableIncome = totalMonthlyGross - (sss + ph + pi);
+    double tax = calculateWithholdingTax(taxableIncome);
+    
+    // 6. Total Deductions for the whole month
+    double totalDeduc = sss + ph + pi + tax;
+
+    // 4. Define the Net Salaries as variables
+    double netSalary1 = gross1; // No deductions for 1st cutoff
+    double netSalary2 = gross2 - totalDeduc; // All deductions applied here
+    
+    String mName = monthName(month);
+
+        System.out.println("\n---------------------------------------------");
+        System.out.println(" Employee #: " + id);
+        System.out.println(" Employee Name: " + emp[2] + " " + emp[1]);
+        System.out.println(" Birthday: " + emp[3]);
+        System.out.println(" Cutoff Date: " + mName + " 1 to " + mName + " 15");
+        System.out.println(" Total Hours Worked: " + h1);
+        System.out.println(" Gross Salary: " + gross1);
+        System.out.println(" Net Salary: " + netSalary1);
+        System.out.println(" \nCutoff Date: " + mName + " 16 to " + mName + " 31 (Deductions Applied)");
+        System.out.println(" Total Hours Worked: " + h2);
+        System.out.println(" Gross Salary: " + gross2);
+        System.out.println(" Each Deduction:");
+        System.out.println("    SSS: " + sss);
+        System.out.println("    PhilHealth: " + ph);
+        System.out.println("    Pag-IBIG: " + pi);
+        System.out.println("    Tax: " + tax);
+        System.out.println(" Total Deductions: " + totalDeduc);
+        System.out.println(" Net Salary: " + netSalary2);
+        System.out.println("---------------------------------------------");
     }
-    return null;
-    }
-}
+  }
