@@ -20,8 +20,8 @@ import java.time.format.DateTimeFormatter;
 
 public class MotorPHPayroll {
     
-    private static final String ATTENDANCE_FILE = "resources/data_attendance.csv";
-    private static final String EMPLOYEE_FILE = "resources/data_employee.csv";
+    private static final String ATTENDANCE_FILE = "resources/MotorPH_Employee Data - Attendance Record";
+    private static final String EMPLOYEE_FILE = "resources/MotorPH_Employee Data - Employee Details";
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -84,11 +84,17 @@ public class MotorPHPayroll {
                 return line;
             }
         }
-    } catch (IOException e) {
-        System.out.println("Error reading file: " + e.getMessage());
+    } 
+    // Specifically catch if the file is missing
+    catch (java.io.FileNotFoundException e) {
+        System.out.println("Error: The file at '" + path + "' was not found. Please check the resources folder.");
+    } 
+    // Catch other general reading errors
+    catch (IOException e) {
+        System.out.println("Error: There was a problem reading the file.");
     }
     return null;
-    }
+}
     
     /**
      * CSV Parser. Baeldung CSV File into Array 6.1
@@ -148,13 +154,14 @@ public class MotorPHPayroll {
                 continue; 
             }
 
-            System.out.print("Enter month (06 to 12): ");
-            String month = scanner.nextLine();
-            if (month.length() == 1) month = "0" + month;
-
-            calculatePayroll(smartSplit(data), month);
+            // Automatically show all months from June to December for one employee
+            for (int m = 6; m <= 12; m++) {
+                String monthStr = (m < 10) ? "0" + m : String.valueOf(m);
+                calculatePayroll(smartSplit(data), monthStr);
+            }
 
         } else if (choice.equals("2")) {
+            // Enter month for processAll for organization
             System.out.print("Enter month (06 to 12): ");
             String month = scanner.nextLine();
             if (month.length() == 1) month = "0" + month;
@@ -163,9 +170,9 @@ public class MotorPHPayroll {
 
         } else if (choice.equals("3")) {
             break; 
-          }
         }
     }
+}
     
     private static String monthName(String monthStr) {
         int month = Integer.parseInt(monthStr);
@@ -220,25 +227,48 @@ public class MotorPHPayroll {
 
     public static double hoursWorked(String id, String month, int start, int end) {
     double total = 0;
-    try (BufferedReader br = new BufferedReader(new FileReader(ATTENDANCE_FILE))) {
-            br.readLine(); 
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] row = smartSplit(line); 
-                if (row[0].trim().equals(id.trim())) {
-                    String[] date = row[3].split("/");
-                    if (date[0].equals(month)) {
-                        int d = Integer.parseInt(date[1]);
-                        if (d >= start && d <= end) {
-                            total += calculateShift(row[4], row[5]);
-                        }
-                    }
-                }
+    java.util.List<String> records = findAttendanceData(ATTENDANCE_FILE, id);
+
+    for (String line : records) {
+        String[] row = smartSplit(line);
+        String[] dateParts = row[3].split("/"); // Index 3 is Date
+        
+        if (dateParts[0].equals(month)) {
+            int day = Integer.parseInt(dateParts[1]);
+            if (day >= start && day <= end) {
+                total += calculateShift(row[4], row[5]); // Index 4=In, 5=Out
             }
-        } catch (IOException e) {}
-        return total;
+        }
+    }
+    return total;
     }
 
+    private static java.util.List<String> findAttendanceData(String path, String id) {
+     java.util.List<String> records = new java.util.ArrayList<>();
+
+    try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+        String line;
+        br.readLine(); 
+
+        while ((line = br.readLine()) != null) {
+            String[] columns = smartSplit(line);
+            if (columns[0] != null && columns[0].trim().equals(id.trim())) {
+                records.add(line);
+            }
+        }
+    } 
+    // 1. Specifically catch if the file is missing
+    catch (java.io.FileNotFoundException e) {
+        System.out.println("Error: The file at '" + path + "' was not found. Please check the resources folder.");
+    } 
+    // 2. Catch other reading errors 
+    catch (IOException e) {
+        System.out.println("Error: There was a problem reading the file. (Technical details: " + e.getMessage() + ")");
+    }
+
+    return records;
+    }
+    
     // --- DEDUCTIONS LOGIC ---
     public static double computeSSS(double gross) {
         if (gross < 3250) return 135.00;
@@ -361,41 +391,37 @@ public class MotorPHPayroll {
 
     public static void calculatePayroll(String[] emp, String month) {
     String id = emp[0];
-    // Keep hourly rate and allowances as they are
+    // Parse the hourly rate (found at index 18)
     double hourlyRate = Double.parseDouble(emp[18].replace(",", ""));
-    
-    double rice = Double.parseDouble(emp[14].replace(",", "")) / 2.0;
-    double phone = Double.parseDouble(emp[15].replace(",", "")) / 2.0;
-    double clothing = Double.parseDouble(emp[16].replace(",", "")) / 2.0;
-    double totalAllowancesPerCutoff = rice + phone + clothing;
 
     // 1. Calculate actual hours worked for both cutoffs
     double h1 = hoursWorked(id, month, 1, 15);
     double h2 = hoursWorked(id, month, 16, 31);
 
-    // 2. Calculate Gross Salary based on WORKED hours, not just basic salary
-    double gross1 = (h1 * hourlyRate) + totalAllowancesPerCutoff;
-    double gross2 = (h2 * hourlyRate) + totalAllowancesPerCutoff;
+    // 2. Gross Salary = Total Hours Worked * Hourly Rate
+    double gross1 = h1 * hourlyRate;
+    double gross2 = h2 * hourlyRate;
 
-    // 3. IMPORTANT: Calculate total monthly gross to determine correct tax/SSS brackets
+    // 3. Monthly Gross (used to determine correct tax/SSS brackets)
     double totalMonthlyGross = gross1 + gross2;
 
-    // 4. Use totalMonthlyGross instead of monthlyBasic
-    // This ensures that if they work less, they pay less tax/SSS
+    // 4. Compute Deductions based on the Monthly Gross
     double sss = computeSSS(totalMonthlyGross);
     double ph = computePhilHealth(totalMonthlyGross);
     double pi = computePagIBIG(totalMonthlyGross);
     
-    // 5. CORRECTED: Taxable Income is Gross minus the three contributions
+    // 5. Taxable Income (Monthly Gross - SSS/PH/PI) for tax bracket calculation
     double taxableIncome = totalMonthlyGross - (sss + ph + pi);
     double tax = calculateWithholdingTax(taxableIncome);
     
-    // 6. Total Deductions for the whole month
+    // 6. Total Monthly Deductions
     double totalDeduc = sss + ph + pi + tax;
 
-    // 4. Define the Net Salaries as variables
-    double netSalary1 = gross1; // No deductions for 1st cutoff
-    double netSalary2 = gross2 - totalDeduc; // All deductions applied here
+    // 7. Net Salary calculation (Formula: Gross - Deductions)
+    // 1st Cutoff: No deductions applied
+    double netSalary1 = gross1; 
+    // 2nd Cutoff: All monthly deductions applied here
+    double netSalary2 = gross2 - totalDeduc;
     
     String mName = monthName(month);
 
