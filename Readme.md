@@ -87,29 +87,29 @@ Used nested arithmetic and conditions
 
 21. **System.exit(0)**- the termination command used throughout the program to safely close the application when the user chooses to exit.
 
-Syllabus Covered
-Variables & Operators: For salary arithmetic and tax tiering.
-Control Structures: switch expressions for months and if-else for tax brackets.
-Methods: Modularized logic for clean, reusable code.
-File Handling: Used BufferedReader and FileReader implementation.
-Java Time API: LocalTime and DateTimeFormatter for precise attendance tracking.
+Syllabus Covered  
+Variables & Operators: For salary arithmetic and tax tiering.  
+Control Structures: switch expressions for months and if-else for tax brackets.  
+Methods: Modularized logic for clean, reusable code.  
+File Handling: Used BufferedReader and FileReader implementation.  
+Java Time API: LocalTime and DateTimeFormatter for precise attendance tracking.  
 
-Notes
-The CSV files are located in the resources/ folder.
-Year: For the 2024 attendance data
-Salary and Deductions calculators from Phase 1 MotorPH (SSS, PhilHealth, PagIBIG, Withholdingtax)
-Payroll cutoff (1-15) displays gross salary and net salary (no deductions)
-Payroll cutoff (16-31) displays gross salary and applies all monthly deductions to calculate the final Net Salary.
+Notes  
+The CSV files are located in the resources/ folder.  
+Year: For the 2024 attendance data  
+Salary and Deductions calculators from Phase 1 MotorPH (SSS, PhilHealth, PagIBIG, Withholdingtax)  
+Payroll cutoff (1-15) displays gross salary and net salary (no deductions)  
+Payroll cutoff (16-31) displays gross salary and applies all monthly deductions to calculate the final Net Salary.  
 
-Additional Revision Notes after consultation
-1. Integrated a file path for findAttendanceData to ensure stable access to the attendance CSV/source file.
-2. Single Employee View: Removed the month selection requirement. Searching for an individual now displays their entire payroll history across all months.
-Process All: Maintained the month-based filter for bulk processing to allow for standard monthly payroll runs.
-3. Allowance Removal: General allowances have been removed to focus strictly on the core earnings formula.
-4. Formula Standardization for Total Hours Worked, Gross Salary, and Net Salary.
-5. Made sure to add error messages for Try-Catch. 
+**Additional Revision Notes after consultation**
+1. Integrated a file path for findAttendanceData to ensure stable access to the attendance CSV/source file.  
+2. Single Employee View: Removed the month selection requirement. Searching for an individual now displays their entire payroll history across all months.  
+Process All: Maintained the month-based filter for bulk processing to allow for standard monthly payroll runs.  
+3. Allowance Removal: General allowances have been removed to focus strictly on the core earnings formula.  
+4. Formula Standardization for Total Hours Worked, Gross Salary, and Net Salary.  
+5. Made sure to add error messages for Try-Catch.  
 
-[Project Plan](https://docs.google.com/spreadsheets/d/1rbrQGOejCtMpRpwfM78M2QLEYzDD2OVu1BiteN0ZaC8/edit?usp=sharing) 
+[Project Plan](https://docs.google.com/spreadsheets/d/1rbrQGOejCtMpRpwfM78M2QLEYzDD2OVu1BiteN0ZaC8/edit?usp=sharing)   
 [Excel Test for calculatePayroll](https://docs.google.com/spreadsheets/d/1lgwjecejDZlg4Ws7lmHo8aKcW4ddLghxu1lab4PAMwg/edit?usp=sharing)  
 
 
