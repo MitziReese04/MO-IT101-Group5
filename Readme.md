@@ -106,7 +106,8 @@ Additional Revision Notes after consultation
 2. Single Employee View: Removed the month selection requirement. Searching for an individual now displays their entire payroll history across all months.
 Process All: Maintained the month-based filter for bulk processing to allow for standard monthly payroll runs.
 3. Allowance Removal: General allowances have been removed to focus strictly on the core earnings formula.
-4. Formula Standardization for Total Hours Worked, Gross Salary, and Net Salary. 
+4. Formula Standardization for Total Hours Worked, Gross Salary, and Net Salary.
+5. Made sure to add error messages for Try-Catch. 
 
 [Project Plan](https://docs.google.com/spreadsheets/d/1rbrQGOejCtMpRpwfM78M2QLEYzDD2OVu1BiteN0ZaC8/edit?usp=sharing) 
 [Excel Test for calculatePayroll](https://docs.google.com/spreadsheets/d/1lgwjecejDZlg4Ws7lmHo8aKcW4ddLghxu1lab4PAMwg/edit?usp=sharing)  
