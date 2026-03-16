@@ -327,13 +327,22 @@ public class MotorPHPayroll {
      * return the sss contribution
      */
     public static double computeSSS(double salary) {
+        // Case for salaries below the first bracket
         if (salary < 3250) return 135.00;
+        
+        // Case for salaries exceeding the maximum bracket
         if (salary >= 24750) return 1125.00;
         
+        // Start the loop logic at the first active bracket (3,250 - 3,749.99)
         double threshold = 3250;
-        double contribution = 135.00;
+        double contribution = 157.50; 
+        
         while (threshold < 24750) {
-            if (salary < threshold + 500) return contribution;
+            // Check if salary falls within the current 500-peso range
+            if (salary >= threshold && salary <= threshold + 499.99) {
+                return contribution;
+            }
+            
             threshold += 500;
             contribution += 22.50;
         }
@@ -400,11 +409,14 @@ public class MotorPHPayroll {
 
         double grossFirstCutoff = hoursFirstCutoff * hourlyRate;
         double grossSecondCutoff = hoursSecondCutoff * hourlyRate;
-        
-        double sss = computeSSS(grossFirstCutoff + grossSecondCutoff);
-        double ph = computePhilHealth(grossFirstCutoff + grossSecondCutoff);
-        double pi = computePagIBIG(grossFirstCutoff + grossSecondCutoff);
-        double taxableIncome = (grossFirstCutoff + grossSecondCutoff) - (sss + ph + pi);
+                
+        // Fix: Calculate the total once and reuse the variable
+        double totalMonthlyGross = grossFirstCutoff + grossSecondCutoff;
+
+        double sss = computeSSS(totalMonthlyGross);
+        double ph = computePhilHealth(totalMonthlyGross);
+        double pi = computePagIBIG(totalMonthlyGross);
+        double taxableIncome = totalMonthlyGross - (sss + ph + pi);
         double tax = calculateWithholdingTax(taxableIncome);
         double totalDeduc = sss + ph + pi + tax;
 
