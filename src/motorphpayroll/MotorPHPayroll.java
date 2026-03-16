@@ -30,6 +30,7 @@ public class MotorPHPayroll {
     /**
      * Main entry point. Handles login authentication and system navigation.
      * using Logical Operators (&& and ||).
+     * scanner used for user input
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -89,6 +90,8 @@ public class MotorPHPayroll {
     /**
      * Searches for a specific employee ID within the Employee Details file.
      * Includes error handling for missing files or read errors.
+     * File handling, path for employee data, id for employee id
+     * return line for data, or null if not found.
      */
     private static String findEmployeeData(String path, String id) {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
@@ -111,6 +114,7 @@ public class MotorPHPayroll {
      * CSV Parser. Baeldung CSV File into Array 6.1
      * Iterates character by character to handle commas inside quotes.
      * Uses dynamic ArrayList.
+     * line for single line from csv file, return a string array where is element is a specific column
      */
     private static String[] smartSplit(String line) {
         if (line == null || line.isEmpty()) return new String[0];
@@ -136,6 +140,7 @@ public class MotorPHPayroll {
 
     /**
      * Manages the workflow for Payroll Staff.
+     * scanner for user input
      */
     public static void handlePayrollStaffFlow(Scanner scanner) {
         while (true) {
@@ -208,6 +213,8 @@ public class MotorPHPayroll {
     /**
      * Helper to map month number to name.
      * switch expressions
+     * monthStr is the numeric string for month
+     * return the full name of month
      */
     private static String monthName(String monthStr) {
         int month = Integer.parseInt(monthStr);
@@ -224,7 +231,8 @@ public class MotorPHPayroll {
     }
 
     /**
-     * Processes payroll for every employee in the records.
+     * Processes payroll for every employee in the records
+     * chosen month by user
      */
     private static void processAll(String month) {
         try (BufferedReader br = new BufferedReader(new FileReader(EMPLOYEE_FILE))) {
@@ -241,6 +249,8 @@ public class MotorPHPayroll {
     /**
      * Calculates shift hours based on clock-in/out and MotorPH rules.
      * Java Time API. Grace period and lunch hour rules. 
+     * logIn for clock-in, logOut for clock-out
+     * standard shift is 8 hours
      */
     private static double calculateShift(String logIn, String logOut) {
         try {
@@ -268,6 +278,8 @@ public class MotorPHPayroll {
     /**
      * Calculates total hours worked within a date range.
      * Scans attendance CSV for records matching the employee ID and month.
+     * id for employee id, month for chosen month, start for start of cutoff, end for end of cutoff
+     * return to the total hours worked during the cutoff hence += calculation
      */
     public static double hoursWorked(String id, String month, int start, int end) {
         double total = 0;
@@ -286,6 +298,8 @@ public class MotorPHPayroll {
     /**
      * Retrieves all attendance records for a specific employee.
      * Explains exactly what went wrong if the file cannot be accessed.
+     * path for attendance, id for employee id
+     * uses while loop and the smartSplit, once matches it adds to the list
      */
     private static List<String> findAttendanceData(String path, String id) {
         List<String> records = new ArrayList<>();
@@ -308,15 +322,17 @@ public class MotorPHPayroll {
     
     /**
      * Simplified SSS Calculation using threshold loop for better readability.
+     * salary for total monthly gross salary
+     * return the sss contribution
      */
-    public static double computeSSS(double gross) {
-        if (gross < 3250) return 135.00;
-        if (gross >= 24750) return 1125.00;
+    public static double computeSSS(double salary) {
+        if (salary < 3250) return 135.00;
+        if (salary >= 24750) return 1125.00;
         
         double threshold = 3250;
         double contribution = 135.00;
         while (threshold < 24750) {
-            if (gross < threshold + 500) return contribution;
+            if (salary < threshold + 500) return contribution;
             threshold += 500;
             contribution += 22.50;
         }
@@ -326,6 +342,8 @@ public class MotorPHPayroll {
     /**
      * Computes PhilHealth contribution (Employee share).
      * Returns the 50% employee share of the PhilHealth premium.
+     * salary for total monthly gross
+     * return the employee share
      */
     public static double computePhilHealth(double salary) {
         if (salary <= 10000) return 150.0;
@@ -336,7 +354,8 @@ public class MotorPHPayroll {
 
     /**
      * Computes Pag-IBIG contribution with a max cap.
-     * Applies Pag-IBIG rates with a contribution cap of 100.00.
+     * Applies Pag-IBIG rates with a contribution cap of 100.00
+     * salary for total monthly gross salary
      */
     public static double computePagIBIG(double salary) {
         if (salary < 1000) return 0;
@@ -347,7 +366,9 @@ public class MotorPHPayroll {
 
     /**
      * Computes Withholding Tax based on taxable income brackets.
-     * Calculates tax after government deductions are subtracted from gross.
+     * Calculates tax after government deductions are subtracted from gross
+     * taxableIncome for gross salary minus SSS, PhilHealth, and Pag-IBIG.
+     * return the withholding tax
      */
     public static double calculateWithholdingTax(double taxableIncome) {
         if (taxableIncome <= 20832) return 0;
@@ -384,7 +405,6 @@ public class MotorPHPayroll {
         double tax = calculateWithholdingTax(taxableIncome);
         double totalDeduc = sss + ph + pi + tax;
 
-        // Correct Format Maintained
         System.out.println("\n---------------------------------------------");
         System.out.println(" Employee #: " + id);
         System.out.println(" Employee Name: " + emp[2] + " " + emp[1]);
