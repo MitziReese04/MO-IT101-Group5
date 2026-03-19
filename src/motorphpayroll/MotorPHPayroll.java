@@ -11,7 +11,7 @@ package motorphpayroll;
  * Variables, Operators, Control Structures, Methods, File Handling
  * Group 5 H1101 MO-IT101
  *
- * adding param and return tags based on Oracle and Baeldung "How to Document Generic Type Parameters in Javadoc"
+ * adding param and return tags based on Oracle and Baeldung. How to Document Generic Type Parameters in Javadoc.
  */
 
 import java.io.BufferedReader;
