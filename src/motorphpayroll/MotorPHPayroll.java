@@ -117,7 +117,7 @@ public class MotorPHPayroll {
     /**
      * CSV Parser. Baeldung CSV File into Array 6.1
      * Iterates character by character to handle commas inside quotes.
-     * Uses dynamic ArrayList.
+     * Uses dynamic ArrayList. Baeldung. Guide to the Java ArrayList
      * @param line - single raw line of text from the CSV file.
      * @return the String array where each element represents a specific column.
      */
@@ -166,7 +166,7 @@ public class MotorPHPayroll {
      * Sub-menu to choose between Individual history or Monthly Bulk runs.
      * nested control structures
      * Individual view now shows all months (June-Dec) automatically but process all let users choose month
-     * Reference: Baeldung - "Validating User Input in Java"
+     * Baeldung. Validating User Input in Java.
      * @param scanner The Scanner object used for capturing user input.
      */
     public static void processPayrollMenu(Scanner scanner) {
@@ -196,7 +196,7 @@ public class MotorPHPayroll {
                 try {
                     int monthVal = Integer.parseInt(month);
                     
-                    // REVISION: Logical check for valid MotorPH months (June to December)
+                    // Logical check for valid MotorPH months (June to December)
                     if (monthVal >= 6 && monthVal <= 12) {
                         // Standardize format: if user typed "6", make it "06"
                         if (month.length() == 1) {
@@ -308,6 +308,7 @@ public class MotorPHPayroll {
     /**
      * Retrieves all attendance records for a specific employee.
      * Explains exactly what went wrong if the file cannot be accessed.
+     * GeeksforGeeks. ArrayList toArray() method in Java with Examples. Baeldung. Guide to the Java ArrayList.
      * @param path - relative file path to the Attendance CSV.
      * @param id - Employee ID to filter by.
      * @return the List of strings containing matching attendance records.
@@ -414,16 +415,30 @@ public class MotorPHPayroll {
         double hourlyRate = Double.parseDouble(emp[18].replace(",", ""));
         String mName = monthName(month);
 
-        // Improved variable names per feedback
-        double hoursFirstCutoff = hoursWorked(id, month, 1, 15);
-        double hoursSecondCutoff = hoursWorked(id, month, 16, 31);
+        // Improve variable names per feedback and adding a loop to eliminate redundancy.
+        double hoursFirstCutoff = 0;
+        double hoursSecondCutoff = 0;
+        List<String> records = findAttendanceData(ATTENDANCE_FILE, id); //Retrieve all records for employee at once. 
+
+        for (String line : records) {
+            String[] row = smartSplit(line);
+            String[] dateParts = row[3].split("/"); 
+            if (dateParts[0].equals(month)) {
+                int day = Integer.parseInt(dateParts[1]);
+                double shift = calculateShift(row[4], row[5]);
+                if (day <= 15) {
+                    hoursFirstCutoff += shift;
+                } else {
+                    hoursSecondCutoff += shift;
+                }
+            }
+        }
 
         double grossFirstCutoff = hoursFirstCutoff * hourlyRate;
         double grossSecondCutoff = hoursSecondCutoff * hourlyRate;
-                
-        // Fix: Calculate the total once and reuse the variable
         double totalMonthlyGross = grossFirstCutoff + grossSecondCutoff;
-
+        
+        //Deduction calculations
         double sss = computeSSS(totalMonthlyGross);
         double ph = computePhilHealth(totalMonthlyGross);
         double pi = computePagIBIG(totalMonthlyGross);
