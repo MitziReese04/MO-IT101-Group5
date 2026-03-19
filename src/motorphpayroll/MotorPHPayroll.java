@@ -145,7 +145,7 @@ public class MotorPHPayroll {
 
     /**
      * Manages the workflow for Payroll Staff.
-    * @param scanner The Scanner object used for capturing user input.
+     * @param scanner The Scanner object used for capturing user input.
      */
     public static void handlePayrollStaffFlow(Scanner scanner) {
         while (true) {
