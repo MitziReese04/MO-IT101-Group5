@@ -28,8 +28,8 @@ Payroll Staff: Can process payroll for a specific individual or the entire compa
 Using Logical Operators (&& and ||) for conditional checking that sends user to the correct department
 There are also functions: handleEmployeeFlow & handlePayrollStaffFlow that separates the user experience based on the login role.
 
-Username: employee or payroll_staff  
-Password: 12345
+  Username: employee or payroll_staff  
+  Password: 12345
 
 6. **handleEmployeeFlow** - controls the menu loop for regular employees, allowing them to input an ID number to view their personal profile details.
 Uses a while(true) loop to keep the employee menu active until they exit.
