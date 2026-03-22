@@ -1,16 +1,18 @@
-/*
+/**
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
 
 package motorphpayroll;
 
-/*
+/**
  * MotorPH Payroll System
  * Syllabus Topics Covered: 
  * Variables, Operators, Control Structures, Methods, File Handling
+ * JavaTime API (handles clock times), ArrayList (for scalability), Wrapper Classes (turn texts into numbers)
  * Group 5 H1101 MO-IT101
- * adding param and return tags based on Oracle and Baeldung. How to Document Generic Type Parameters in Javadoc.
+ *
+ * adding param and return tags based on Oracle. How to Write Doc Comments for the Javadoc Tool. Baeldung. How to Document Generic Type Parameters in Javadoc.
  */
 
 import java.io.BufferedReader;
@@ -43,7 +45,7 @@ public class MotorPHPayroll {
         System.out.print("Enter Password: ");
         String pass = scanner.nextLine();
         
-        // Logical Operators for role-based access
+        // Logical Operators based on role-based access
         if (pass.equals("12345") && (user.equals("employee") || user.equals("payroll_staff"))) {
             if (user.equals("employee")) {
                 handleEmployeeFlow(scanner);
@@ -92,6 +94,7 @@ public class MotorPHPayroll {
     /**
      * Searches for a specific employee ID within the Employee Details file.
      * Includes error handling for missing files or read errors.
+     * Baeldung. Exception Handling in Java. 4.4 try-with-resources and 4.5. multiple catch (file not found/ file corrupted)
      * @param path - relative file path to the Employee Details CSV.
      * @param id Employee ID.
      * @return the raw line of data for the employee, or null if not found.
@@ -106,13 +109,13 @@ public class MotorPHPayroll {
                 }
             }
         } catch (java.io.FileNotFoundException e) {
-            System.out.println("Error: The file '" + path + "' was not found. Please check the resources folder.");
+            System.out.println("Error: The file '" + path + "' was not found.");
         } catch (IOException e) {
-            System.out.println("Error: There was a problem reading the employee file. Details: " + e.getMessage());
+            System.out.println("Error reading file: " + e.getMessage());
         }
         return null;
     }
-    
+
     /**
      * CSV Parser. Baeldung CSV File into Array 6.1
      * Iterates character by character to handle commas inside quotes.
@@ -150,10 +153,10 @@ public class MotorPHPayroll {
     */
     private static String fullName(String[] emp) {
         if (emp.length < 3) return "Unknown";
-      
+        
         return emp[2] + " " + emp[1]; 
     }
-    
+
     /**
      * Manages the workflow for Payroll Staff.
      * @param scanner The Scanner object used for capturing user input.
@@ -174,7 +177,7 @@ public class MotorPHPayroll {
     }
 
     /**
-     * Sub-menu to choose between Individual history or Monthly Bulk runs.
+     * Sub-menu to choose between Individual history or Bulk runs.
      * nested control structures
      * Individual view now shows all months (June-Dec) automatically but process all let users choose month
      * Baeldung. Validating User Input in Java.
@@ -189,44 +192,77 @@ public class MotorPHPayroll {
 
             if (choice.equals("1")) {
                 System.out.print("Enter employee number: ");
-                String id = scanner.nextLine(); 
-                String data = findEmployeeData(EMPLOYEE_FILE, id);
-
-                if (data == null) {
-                    System.out.println("Employee number does not exist.");
-                    continue; 
-                }
-                for (int m = 6; m <= 12; m++) {
-                    String monthStr = (m < 10) ? "0" + m : String.valueOf(m);
-                    calculatePayroll(smartSplit(data), monthStr);
-                }
-            } else if (choice.equals("2")) {
-                System.out.print("Enter month (06 to 12): ");
-                String month = scanner.nextLine();
+                String id = scanner.nextLine();
+                // Only for a specific ID
+                processPayroll(id); 
                 
-                try {
-                    int monthVal = Integer.parseInt(month);
-                    
-                    // Logical check for valid MotorPH months (June to December)
-                    if (monthVal >= 6 && monthVal <= 12) {
-                        // Standardize format: if user typed "6", make it "06"
-                        if (month.length() == 1) {
-                            month = "0" + month;
-                        }
-                        processAll(month);
-                    } else {
-                        System.out.println("Error: Invalid month. Please enter a value between 06 and 12.");
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println("Error: Please enter a numeric month (e.g., 06).");
-                }
-
+            } else if (choice.equals("2")) {
+                // Calls null to process everyone
+                processPayroll(null); 
+                
             } else if (choice.equals("3")) {
                 break; 
             }
         }
     }
-    
+
+    /**
+     * Combination of the processAll and manual loops to process one since they have same function
+     * Baeldung. Exception Handling in Java. 4.4 try-with-resources and 7.1 IOException (if file fails)
+     * @param id Employee ID.
+     */
+    private static void processPayroll(String id) {
+        try (BufferedReader br = new BufferedReader(new FileReader(EMPLOYEE_FILE))) {
+            br.readLine(); 
+            String line;
+            boolean found = false;
+
+            while ((line = br.readLine()) != null) {
+                String[] emp = smartSplit(line);
+                String currentId = emp[0]; // This is the ID we found in the row
+
+                //Logical operator to combine two tasks: One and All.
+                if (id == null || currentId.equals(id)) {
+                    found = true;
+                    List<String> periods = findWorkingPeriods(currentId);
+                    
+                    for (String p : periods) {
+                        String[] parts = p.split("/");  //Baeldung. Split a String in Java - 2. String.split().
+                        calculatePayroll(emp, parts[0], parts[1]); 
+                    }
+                    if (id != null) break; 
+                }
+            }
+            if (!found && id != null) System.out.println("Employee number does not exist.");
+        } catch (IOException e) {
+            System.out.println("Error reading Employee file.");
+        }
+    }
+
+    /**
+     * Helper to find MM/YYYY in attendance 
+     * Uses simple ArrayList logic to avoid duplicates.
+     * @param id Employee ID.
+     */
+    private static List<String> findWorkingPeriods(String id) {
+        List<String> workingPeriods = new ArrayList<>();
+        List<String> records = findAttendanceData(ATTENDANCE_FILE, id);
+        
+        for (String record : records) {
+            String[] columns = smartSplit(record);
+            String[] dateParts = columns[3].split("/"); // Format: MM/DD/YYYY
+            
+            if (dateParts.length >= 3) {
+                String monthYear = dateParts[0] + "/" + dateParts[2];
+                
+                if (!workingPeriods.contains(monthYear)) {
+                    workingPeriods.add(monthYear);
+                }
+            }
+        }
+        return workingPeriods;
+    }
+
     /**
      * Helper to map month number to name.
      * switch expressions
@@ -248,27 +284,12 @@ public class MotorPHPayroll {
     }
 
     /**
-     * Processes payroll for every employee in the records
-     * @param month - numeric month to process (06 to 12).
-     */
-    private static void processAll(String month) {
-        try (BufferedReader br = new BufferedReader(new FileReader(EMPLOYEE_FILE))) {
-            br.readLine(); // Header
-            String line;
-            while ((line = br.readLine()) != null) {
-                calculatePayroll(smartSplit(line), month);
-            }
-        } catch (IOException e) {
-            System.out.println("Error reading file.");
-        }
-    }
-    
-    /**
      * Calculates shift hours based on clock-in/out and MotorPH rules.
      * Java Time API. Grace period and lunch hour rules. 
+     * Baeldung. Exception Handling in Java. 4.2 try-catch, 3.2 unchecked exception
      * @param logIn - clock-in time string (H:mm).
      * @param logOut - clock-out time string (H:mm).
-     * @return the total worked hours as a double (standard shift is 8.0).
+     * @return the final hour count
      */
     private static double calculateShift(String logIn, String logOut) {
         try {
@@ -279,7 +300,7 @@ public class MotorPHPayroll {
             LocalTime startLimit = LocalTime.of(8, 0);
             LocalTime endLimit = LocalTime.of(17, 0);
             
-            //Shift calculation
+            //Calculating shift
             LocalTime actualStart = timeIn.isAfter(graceLimit) ? timeIn : startLimit;
             LocalTime actualEnd = timeOut.isAfter(endLimit) ? endLimit : timeOut;
 
@@ -288,37 +309,20 @@ public class MotorPHPayroll {
             int startMins = actualStart.getHour() * 60 + actualStart.getMinute();
             int endMins = actualEnd.getHour() * 60 + actualEnd.getMinute();
             
-            // Subtracting 60 minutes for lunch break
+            //Subtracting 60 mins for lunch break
             return Math.max(0, (endMins - startMins - 60) / 60.0);
-        } catch (Exception e) { return 0; }
+            
+        } catch (Exception e) { 
+            System.out.println("Time Error: Invalid format found (" + logIn + " or " + logOut + "). Expected H:mm.");
+        
+            return 0; 
+        }
     }
 
     /**
-     * Calculates total hours worked within a date range.
-     * Scans attendance CSV for records matching the employee ID and month.
-     * @param id - Employee ID.
-     * @param month - numeric month.
-     * @param start - starting day of the cutoff.
-     * @param end - ending day of the cutoff.
-     * @return the total accumulated hours worked during the cutoff.
-     */
-    public static double hoursWorked(String id, String month, int start, int end) {
-        double total = 0;
-        List<String> records = findAttendanceData(ATTENDANCE_FILE, id); 
-        for (String line : records) {
-            String[] row = smartSplit(line);
-            String[] dateParts = row[3].split("/"); 
-            if (dateParts[0].equals(month)) {
-                int day = Integer.parseInt(dateParts[1]);
-                if (day >= start && day <= end) total += calculateShift(row[4], row[5]);
-            }
-        }
-        return total;
-    }
-    
-    /**
      * Retrieves all attendance records for a specific employee.
      * Explains exactly what went wrong if the file cannot be accessed.
+     * Baeldung. Exception Handling in Java. 4.4 try-with-resources and 4.5 multiple catch
      * GeeksforGeeks. ArrayList toArray() method in Java with Examples. Baeldung. Guide to the Java ArrayList.
      * @param path - relative file path to the Attendance CSV.
      * @param id - Employee ID to filter by.
@@ -327,39 +331,41 @@ public class MotorPHPayroll {
     private static List<String> findAttendanceData(String path, String id) {
         List<String> records = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-            br.readLine(); // Skip CSV header
+            br.readLine(); 
             String line;
             while ((line = br.readLine()) != null) {
                 String[] columns = smartSplit(line);
-                if (columns.length > 0 && columns[0] != null && columns[0].trim().equals(id.trim())) {
+                if (columns.length > 0 && columns[0].trim().equals(id.trim())) {
                     records.add(line);
                 }
             }
-        } catch (java.io.FileNotFoundException e) {
+          } catch (java.io.FileNotFoundException e) {
             System.out.println("Error: Attendance file '" + path + "' not found.");
         } catch (IOException e) {
             System.out.println("Error: Problem reading attendance records. Details: " + e.getMessage());
         }
         return records;
     }
-    
+
+
     /**
     * Helper to safely extract and parse the hourly rate.
     * Purpose: Handles string cleaning and prevents crashes on bad data.
+    * Baeldung. Exception Handling in Java. 3.2 unchecked exception if there is a potential typo in csv
     * @param emp - Array of employee strings.
     * @return The hourly rate as a double; returns 0.0 if the data is invalid or missing.
     */
     private static double hourlyRate(String[] emp) {
         try {
-            // Removes commas and trims whitespace
-        return Double.parseDouble(emp[18].replace(",", "").trim());
-    } catch (Exception e) {
-        System.out.println("Data Error for ID " + emp[0] + ": Invalid Hourly Rate.");
+            return Double.parseDouble(emp[18].replace(",", "").trim());
+            
+        } catch (Exception e) { 
+            System.out.println("Data Error for ID " + emp[0] + ": Invalid Hourly Rate format in CSV.");
         
         return 0.0; 
-      }
+        }
     }
- 
+
     /**
      * Simplified SSS Calculation using threshold loop for better readability.
      * @param salary - total monthly gross income.
@@ -417,7 +423,7 @@ public class MotorPHPayroll {
     /**
      * Computes Withholding Tax based on taxable income brackets.
      * Calculates tax after government deductions are subtracted from gross
-     * @param taxableIncome Gross salary minus SSS, PhilHealth, and Pag-IBIG.
+     * @param taxableIncome - Gross salary minus SSS, PhilHealth, and PagIBIG.
      * @return the calculated withholding tax amount.
      */
     public static double calculateWithholdingTax(double taxableIncome) {
@@ -432,33 +438,32 @@ public class MotorPHPayroll {
 
     /**
      * Payroll output engine.
-     * Revised: Descriptive internal names (hoursFirstCutoff)
+     * Improve also the variable names to have descriptive names (hoursFirstCutoff)
      * @param emp - String array of employee details from the CSV.
      * @param month - specific month to process.
+     * @param year - specific year to process.
      */
-    public static void calculatePayroll(String[] emp, String month) {
+    public static void calculatePayroll(String[] emp, String month, String year) {
         if (emp == null || emp.length < 19 || emp[0].isEmpty()) return;
 
         String id = emp[0];
         double hourlyRate = hourlyRate(emp);
         String mName = monthName(month);
 
-        // Improve variable names per feedback and adding a loop to eliminate redundancy.
         double hoursFirstCutoff = 0;
         double hoursSecondCutoff = 0;
-        List<String> records = findAttendanceData(ATTENDANCE_FILE, id); //Retrieve all records for employee at once. 
+        List<String> records = findAttendanceData(ATTENDANCE_FILE, id);
 
         for (String line : records) {
             String[] row = smartSplit(line);
-            String[] dateParts = row[3].split("/"); 
-            if (dateParts[0].equals(month)) {
+            String[] dateParts = row[3].split("/"); // looks at date and String.split.
+            
+            // Added year for scalability
+            if (dateParts[0].equals(month) && dateParts[2].equals(year)) { //Check for correct month and year.
                 int day = Integer.parseInt(dateParts[1]);
                 double shift = calculateShift(row[4], row[5]);
-                if (day <= 15) {
-                    hoursFirstCutoff += shift;
-                } else {
-                    hoursSecondCutoff += shift;
-                }
+                if (day <= 15) hoursFirstCutoff += shift;
+                else hoursSecondCutoff += shift;
             }
         }
 
@@ -466,7 +471,7 @@ public class MotorPHPayroll {
         double grossSecondCutoff = hoursSecondCutoff * hourlyRate;
         double totalMonthlyGross = grossFirstCutoff + grossSecondCutoff;
         
-        //Deduction calculations
+        //Deductions calculations
         double sss = computeSSS(totalMonthlyGross);
         double ph = computePhilHealth(totalMonthlyGross);
         double pi = computePagIBIG(totalMonthlyGross);
