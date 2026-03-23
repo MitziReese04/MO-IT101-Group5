@@ -227,8 +227,9 @@ public class MotorPHPayroll {
                     List<String> periods = findWorkingPeriods(currentId);
                     
                     for (String payPeriod : periods) {
-                        String[] parts = payPeriod.split("/");  //Baeldung. Split a String in Java - 2. String.split().
-                        calculatePayroll(emp, parts[0], parts[1]); 
+                        // dateParts[0] = Month, dateParts[1] = Year
+                        String[] dateParts = payPeriod.split("/");  //Baeldung. Split a String in Java - 2. String.split().
+                        calculatePayroll(emp, dateParts[0], dateParts[1]); 
                     }
                     if (id != null) break; 
                 }
