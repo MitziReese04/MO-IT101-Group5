@@ -226,8 +226,8 @@ public class MotorPHPayroll {
                     found = true;
                     List<String> periods = findWorkingPeriods(currentId);
                     
-                    for (String p : periods) {
-                        String[] parts = p.split("/");  //Baeldung. Split a String in Java - 2. String.split().
+                    for (String payPeriod : periods) {
+                        String[] parts = payPeriod.split("/");  //Baeldung. Split a String in Java - 2. String.split().
                         calculatePayroll(emp, parts[0], parts[1]); 
                     }
                     if (id != null) break; 
@@ -456,10 +456,10 @@ public class MotorPHPayroll {
 
         for (String line : records) {
             String[] row = smartSplit(line);
-            String[] dateParts = row[3].split("/"); // looks at date and String.split.
+            String[] dateParts = row[3].split("/"); // looks at date and String.split
             
             // Added year for scalability
-            if (dateParts[0].equals(month) && dateParts[2].equals(year)) { //Check for correct month and year.
+            if (dateParts[0].equals(month) && dateParts[2].equals(year)) { //Check correct month and year
                 int day = Integer.parseInt(dateParts[1]);
                 double shift = calculateShift(row[4], row[5]);
                 if (day <= 15) hoursFirstCutoff += shift;
