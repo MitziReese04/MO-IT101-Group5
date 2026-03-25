@@ -54,6 +54,7 @@ public class MotorPHPayroll {
             }
         } else {
             System.out.println("Incorrect username and/or password.");
+            System.exit(0); 
         }
         
         scanner.close();
@@ -86,7 +87,8 @@ public class MotorPHPayroll {
                     System.out.println("The employee number does not exist.");
                 }
             } else if (choice.equals("2")) {
-                return; 
+                System.exit(0);
+ 
             }
         }
     }
@@ -171,7 +173,7 @@ public class MotorPHPayroll {
             if (choice.equals("1")) {
                 processPayrollMenu(scanner);
             } else if (choice.equals("2")) {
-                return;
+                System.exit(0);
             }
         }
     }
