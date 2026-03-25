@@ -9,6 +9,13 @@ Members of Group 5:
 *Rhayn Lee Hann Suarez (Tester);  
 *Hanna Jane Dalendeg 
 
+How to run the project 
+1. Open in Netbeans by selecting file, open project "MotorPHPayroll" folder.
+2. To make sure that you are in the right class, please right click project, then go to Properties, and then Run and click Browse next to main class, and select "motorphpayroll.MotorPHPayroll".
+3. Clean and build by right clicking the project after clicking the class, and select Clean and Build.
+4. Click the green Play button. 
+
+Features: 
 1. **Imports**   
 import java.io.BufferedReader (Week 10: To read files line by line efficiently);  
 import java.io.FileReader (Week 10: To open the connection to the .csv file);  
@@ -129,11 +136,14 @@ Process All: Maintained the month-based filter for bulk processing to allow for 
 4. While-loop for deduction logic so that there would not be +45 lines especially for SSS (looked for pattern). 
 5. DRY codes such as fullName (single method for lastName and firstName), and findWorkingPeriods (detect months rather than hardcoded loop).
 6. added comments with param and return as per Javadoc.
-7. Refactor payroll logic for scalability by removing the hard-coded months and added the year filter. 
+7. Refactor payroll logic for scalability by removing the hard-coded months and added the year filter.
+
+Note: This project was restored on March 26, 2026 due to error and crash.  
 
 [Project Plan](https://docs.google.com/spreadsheets/d/1rbrQGOejCtMpRpwfM78M2QLEYzDD2OVu1BiteN0ZaC8/edit?usp=sharing)   
 [Excel Test for calculatePayroll](https://docs.google.com/spreadsheets/d/1lgwjecejDZlg4Ws7lmHo8aKcW4ddLghxu1lab4PAMwg/edit?usp=sharing)  
 [QA Test from Group 6](https://docs.google.com/spreadsheets/d/1_NJbuYLilaNfLnaERIAPnRERlTXDbpk0E6Riatdu8ks/edit?usp=sharing)  
+
 
 
 
