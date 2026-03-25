@@ -152,7 +152,7 @@ public class MotorPHPayroll {
      * Centralizes name formatting and avoids repeating array indices. 
      * @param emp - Array of employee strings.
      * @return Formatted full name.
-    */
+     */
     private static String fullName(String[] emp) {
         if (emp.length < 3) return "Unknown";
         
