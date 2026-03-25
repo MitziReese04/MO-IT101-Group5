@@ -126,8 +126,10 @@ Process All: Maintained the month-based filter for bulk processing to allow for 
 1. Added csv code for file handling to ensure program can find and open the files.
 2. Added a try-catch month validation for processAll months so that it will block if user types 13, etc.
 3. Descriptive naming variables.
-4. While-loop for deduction logic so that there would not be +45 lines.
-5. Refactor payroll logic for scalability by removing the hard-coded months and added the year filter. 
+4. While-loop for deduction logic so that there would not be +45 lines especially for SSS (looked for pattern). 
+5. DRY codes such as fullName (single method for lastName and firstName), and findWorkingPeriods (detect months rather than hardcoded loop).
+6. added comments with param and return as per Javadoc.
+7. Refactor payroll logic for scalability by removing the hard-coded months and added the year filter. 
 
 [Project Plan](https://docs.google.com/spreadsheets/d/1rbrQGOejCtMpRpwfM78M2QLEYzDD2OVu1BiteN0ZaC8/edit?usp=sharing)   
 [Excel Test for calculatePayroll](https://docs.google.com/spreadsheets/d/1lgwjecejDZlg4Ws7lmHo8aKcW4ddLghxu1lab4PAMwg/edit?usp=sharing)  
