@@ -90,14 +90,14 @@ Used nested arithmetic and conditions
 20. **calculatePayroll** -  core logic method. It calculates the bi-monthly gross, applies all government deductions, and prints a detailed payslip to the console.
 .replace(",", "") and Double.parseDouble to clean and convert text into math-ready numbers.
 
-21. **System exit** - (return) the termination command used throughout the program to safely close the application when the user chooses to exit. 
+21. **System.exit** - the termination command used throughout the program to safely close the application when the user chooses to exit. 
 
 - main → handleEmployeeFlow or handlePayrollStaffFlow  
 - if handleEmployeeFlow → calls findEmployeeData → calls fullName (shows Employee Number, Employee Name, Birthday)  
 - if handlePayrollStaffFlow → processPayrollMenu → processPayroll  
 - processPayroll → findWorkingPeriods (when employee worked) → findAttendanceData (get logs) and smartSplit (csv commas) → calculatePayroll  
 - calculatePayroll → hourlyRate and smartSplit → calculateShift and monthName → computeSSS and computePhilHealth and computePagIBIG and calculateWithholdingTax
-- System exit (return)    
+- System.exit     
 
 Syllabus Covered  
 Variables & Operators: For salary arithmetic and tax tiering.  
